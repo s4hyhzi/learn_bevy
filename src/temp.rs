@@ -105,7 +105,7 @@ pub fn spirv_to_u32_array(bytes: &[u8]) -> &[u32] {
     }
 }
 
-pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u32> {
+pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
     let ty = match stage {
         ShaderStage::Vertex => glsl_to_spirv::ShaderType::Vertex,
         ShaderStage::Fragment => glsl_to_spirv::ShaderType::Fragment,
@@ -113,9 +113,9 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u32> {
     };
 
     let Ok(mut spirv) = glsl_to_spirv::compile(code, ty)else { panic!("Failed to compile shader") };
-    let mut buffer = Vec::new();
+    let mut buffer = vec![];
     spirv.read_to_end(&mut buffer).expect("Failed to read the file");
-    spirv_to_u32_array(&buffer).to_vec()
+    buffer
 }
 
 pub fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {

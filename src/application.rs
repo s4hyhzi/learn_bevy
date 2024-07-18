@@ -74,6 +74,15 @@ pub trait Application {
         let shader_vs = include_spirv_raw!("shader.vert.spv");
         let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
 
+        // let shader_source = load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
+        // let shader_vs_raw = wgpu::util::make_spirv_raw(&shader_source);
+        // let shader_vs = ShaderModuleDescriptorSpirV {
+        //     label: Some("shader.vert.spv"),
+        //     source: shader_vs_raw,
+        // };
+        // let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
+
+
         let shader_fs = include_spirv_raw!("shader.frag.spv");
         let fs_module = unsafe { device.create_shader_module_spirv(&shader_fs) };
 

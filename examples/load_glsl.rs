@@ -1,9 +1,10 @@
+use wgpu::ShaderModuleDescriptorSpirV;
 use wgsl_study::{load_glsl, ShaderStage};
 
 // 将字节数组转换为 u32 数组
 
 fn main() {
-    let mut s = load_glsl(r#"#version 450
+    let fragment_shader = "#version 450
 
 const int MAX_LIGHTS = 10;
 
@@ -65,6 +66,12 @@ void main() {
     // multiply the light by material color
     o_Target = vec4(color, 1.0) * u_Color;
 }
-"#, ShaderStage::Fragment);
-    println!("{:?}", s);
+";
+    let shader_source = load_glsl(fragment_shader, ShaderStage::Vertex);
+    let shader_vs_raw = wgpu::util::make_spirv_raw(&shader_source);
+    let shader_vs = ShaderModuleDescriptorSpirV {
+        label: Some("shader.vert.spv"),
+        source: shader_vs_raw,
+    };
+    println!("{:?}", shader_vs);
 }
