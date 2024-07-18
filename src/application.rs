@@ -1,7 +1,7 @@
 ﻿use std::sync::Arc;
 
 use egui_wgpu::ScreenDescriptor;
-use wgpu::{Adapter, Device, Queue, Surface, SurfaceConfiguration, TextureFormat};
+use wgpu::{Adapter, Device, Surface, SurfaceConfiguration, TextureFormat};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
