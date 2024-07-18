@@ -1,7 +1,7 @@
 ﻿use std::sync::Arc;
 
 use egui_wgpu::ScreenDescriptor;
-use wgpu::{Adapter, Device, Surface, SurfaceConfiguration, TextureFormat};
+use wgpu::{Adapter, Device, include_spirv_raw, Surface, SurfaceConfiguration, TextureFormat};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -47,7 +47,7 @@ pub trait Application {
                 .await
                 .expect("Failed to find an appropriate adapter");
 
-            let mut features = wgpu::Features::empty();
+            let mut features = wgpu::Features::SPIRV_SHADER_PASSTHROUGH;
             let (device, queue) = adapter
                 .request_device(
                     &wgpu::DeviceDescriptor {
@@ -70,6 +70,73 @@ pub trait Application {
 
         let mut scale_factor = 1.0;
         let mut view_update = false;
+
+        let shader_vs = include_spirv_raw!("shader.vert.spv");
+        let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
+
+        let shader_fs = include_spirv_raw!("shader.frag.spv");
+        let fs_module = unsafe { device.create_shader_module_spirv(&shader_fs) };
+
+        let bind_group_layout =
+            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { label: None, entries: &[] });
+        
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: None,
+            layout: &bind_group_layout,
+            entries: &[],
+        });
+
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: None,
+            bind_group_layouts: &[&bind_group_layout],
+            push_constant_ranges: &[],
+        });
+
+        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("Render Pipeline"),
+            layout: Some(&pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &vs_module,
+                entry_point: "main",
+                compilation_options: Default::default(),
+                buffers: &[],
+            },
+            fragment: Some(wgpu::FragmentState {
+                module: &fs_module,
+                entry_point: "main",
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format: config.format.add_srgb_suffix(),
+                    blend: Some(wgpu::BlendState {
+                        color: wgpu::BlendComponent::REPLACE,
+                        alpha: wgpu::BlendComponent::REPLACE,
+                    }),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+
+            }),
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                front_face: wgpu::FrontFace::Ccw,
+                cull_mode: Some(wgpu::Face::Back),
+                polygon_mode: wgpu::PolygonMode::Fill,
+                // Requires Features::DEPTH_CLIP_CONTROL
+                unclipped_depth: false,
+                // Requires Features::CONSERVATIVE_RASTERIZATION
+                conservative: false,
+            },
+            depth_stencil: None,
+            multisample: wgpu::MultisampleState {
+                count: 1,
+                mask: !0,
+                alpha_to_coverage_enabled: false,
+            },
+            // If the pipeline will be used with a multiview render pass, this
+            // indicates how many array layers the attachments will have.
+            multiview: None,
+        });
+
 
         event_loop.run(move |event, elwt| {
             elwt.set_control_flow(ControlFlow::Poll);
@@ -109,57 +176,82 @@ pub trait Application {
                                 let surface_texture = surface
                                     .get_current_texture()
                                     .expect("Failed to acquire next swap chain texture");
-
+                                
                                 let surface_view = surface_texture
                                     .texture
                                     .create_view(&wgpu::TextureViewDescriptor::default());
-
+                                
                                 let mut encoder =
                                     device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                                        label: None,
+                                        label: Some("Render Encoder"),
                                     });
-
-                                let screen_descriptor = ScreenDescriptor {
-                                    size_in_pixels: [config.width, config.height],
-                                    pixels_per_point: window.scale_factor() as f32 * scale_factor,
-                                };
-
-                                gui_renderer.draw(
-                                    &device,
-                                    &queue,
-                                    &mut encoder,
-                                    &window,
-                                    &surface_view,
-                                    screen_descriptor,
-                                    |ctx| {
-                                        egui::Window::new("hello world!")
-                                            .resizable(true)
-                                            .vscroll(true)
-                                            .default_open(false)
-                                            .show(&ctx, |mut ui| {
-                                                ui.label("Label!");
-
-                                                if ui.button("Button!").clicked() {
-                                                    println!("boom!")
-                                                }
-
-                                                ui.separator();
-                                                ui.horizontal(|ui| {
-                                                    ui.label(format!(
-                                                        "Pixels per point: {}",
-                                                        ctx.pixels_per_point()
-                                                    ));
-                                                    if ui.button("-").clicked() {
-                                                        scale_factor = (scale_factor - 0.1).max(0.3);
+                                {
+                                    
+                                    let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                                        label: Some("Render Pass"),
+                                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                                            view: &(surface_view),
+                                            resolve_target: None,
+                                            ops: wgpu::Operations {
+                                                load: wgpu::LoadOp::Clear(wgpu::Color {
+                                                    r: 0.1,
+                                                    g: 0.2,
+                                                    b: 0.3,
+                                                    a: 1.0,
+                                                }),
+                                                store: wgpu::StoreOp::Store,
+                                            },
+                                        })],
+                                        ..Default::default()
+                                    });
+                                    // 
+                                    render_pass.set_pipeline(&render_pipeline);
+                                    render_pass.set_bind_group(0, &bind_group, &[]);
+                                    render_pass.draw(0..3, 0..1);
+                                }
+                                
+                                {
+                                    let screen_descriptor = ScreenDescriptor {
+                                        size_in_pixels: [config.width, config.height],
+                                        pixels_per_point: window.scale_factor() as f32 * scale_factor,
+                                    };
+                                
+                                    gui_renderer.draw(
+                                        &device,
+                                        &queue,
+                                        &mut encoder,
+                                        &window,
+                                        &surface_view,
+                                        screen_descriptor,
+                                        |ctx| {
+                                            egui::Window::new("hello world!")
+                                                .resizable(true)
+                                                .vscroll(true)
+                                                .default_open(false)
+                                                .show(&ctx, |mut ui| {
+                                                    ui.label("Label!");
+                                
+                                                    if ui.button("Button!").clicked() {
+                                                        println!("boom!")
                                                     }
-                                                    if ui.button("+").clicked() {
-                                                        scale_factor = (scale_factor + 0.1).min(3.0);
-                                                    }
+                                
+                                                    ui.separator();
+                                                    ui.horizontal(|ui| {
+                                                        ui.label(format!(
+                                                            "Pixels per point: {}",
+                                                            ctx.pixels_per_point()
+                                                        ));
+                                                        if ui.button("-").clicked() {
+                                                            scale_factor = (scale_factor - 0.1).max(0.3);
+                                                        }
+                                                        if ui.button("+").clicked() {
+                                                            scale_factor = (scale_factor + 0.1).min(3.0);
+                                                        }
+                                                    });
                                                 });
-                                            });
-                                    },
-                                );
-
+                                        },
+                                    );
+                                }
                                 queue.submit(Some(encoder.finish()));
                                 surface_texture.present();
                             }
@@ -197,8 +289,8 @@ fn create_egui(window: &Window, size: &PhysicalSize<u32>, surface: &Surface, ada
         desired_maximum_frame_latency: 0,
         alpha_mode: swapchain_capabilities.alpha_modes[0],
         view_formats: vec![],
-        width: size.width as u32,
-        height: size.height as u32,
+        width: size.width,
+        height: size.height,
     };
 
     surface.configure(&device, &config);

@@ -13,6 +13,7 @@ pollster = "0.3.0"
 egui = "0.28.1"
 egui-wgpu = "0.28.1"
 egui-winit = "0.28.1"
+png = "0.17.13"
 
 [[example]]
 name = "hello_world"
