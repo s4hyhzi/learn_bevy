@@ -4,4 +4,4 @@ mod gui_tools;
 
 pub use transform::Transform;
 pub use application::Application;
-use crate::gui_tools::GuiRenderer;
+pub use gui_tools::GuiRenderer;

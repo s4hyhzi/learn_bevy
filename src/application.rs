@@ -63,7 +63,7 @@ pub trait Application {
 
             (window, size, surface, adapter, device, queue)
         };
-        let (mut config, mut gui_renderer) = create_egui(&window, &size, &surface, &_adapter, &device, &queue);
+        let (mut config, mut gui_renderer) = create_egui(&window, &size, &surface, &_adapter, &device);
 
         let mut close_requested = false;
         let mut modifiers = ModifiersState::default();
@@ -182,7 +182,7 @@ pub trait Application {
     fn update(&self);
 }
 
-fn create_egui(window: &Window, size: &PhysicalSize<u32>, surface: &Surface, adapter: &Adapter, device: &Device, queue: &Queue) -> (SurfaceConfiguration, GuiRenderer) {
+fn create_egui(window: &Window, size: &PhysicalSize<u32>, surface: &Surface, adapter: &Adapter, device: &Device) -> (SurfaceConfiguration, GuiRenderer) {
     let swapchain_capabilities = surface.get_capabilities(&adapter);
     let selected_format = TextureFormat::Bgra8UnormSrgb;
     let swapchain_format = swapchain_capabilities
