@@ -2,8 +2,6 @@ use std::io::Read;
 pub use std::ops::Range;
 pub use std::rc::Rc;
 
-use zerocopy_derive::{AsBytes, FromZeroes};
-
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
     1.0, 0.0, 0.0, 0.0,
     0.0, -1.0, 0.0, 0.0,
@@ -31,7 +29,7 @@ pub struct Light {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, AsBytes, FromZeroes)]
+#[derive(Clone, Copy)]
 pub struct LightRaw {
     pub proj: [[f32; 4]; 4],
     pub pos: [f32; 4],
@@ -68,14 +66,14 @@ impl Light {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, AsBytes, FromZeroes)]
+#[derive(Clone, Copy)]
 pub struct ForwardUniforms {
     pub proj: [[f32; 4]; 4],
     pub num_lights: [u32; 4],
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, AsBytes, FromZeroes)]
+#[derive(Clone, Copy)]
 pub struct EntityUniforms {
     pub model: [[f32; 4]; 4],
     pub color: [f32; 4],
@@ -118,6 +116,10 @@ pub fn load_glsl(code: &str, stage: ShaderStage) -> Vec<u8> {
     buffer
 }
 
+/**
+ * Generate a perspective matrix with a given aspect ratio.
+ * @param {f32} aspect_ratio.
+ */
 pub fn generate_matrix(aspect_ratio: f32) -> cgmath::Matrix4<f32> {
     let mx_projection = cgmath::perspective(cgmath::Deg(45f32), aspect_ratio, 1.0, 20.0);
     let mx_view = cgmath::Matrix4::look_at_rh(

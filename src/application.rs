@@ -213,7 +213,7 @@ pub trait Application {
                                         })],
                                         ..Default::default()
                                     });
-                                    // 
+                                    
                                     render_pass.set_pipeline(&render_pipeline);
                                     render_pass.set_bind_group(0, &bind_group, &[]);
                                     render_pass.draw(0..3, 0..1);
