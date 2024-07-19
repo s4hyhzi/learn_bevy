@@ -24,7 +24,7 @@ impl GuiRenderer {
     ) -> GuiRenderer {
         let egui_context = Context::default();
 
-        let mut egui_state = State::new(
+        let egui_state = State::new(
             egui_context,
             ViewportId::ROOT,
             &window,

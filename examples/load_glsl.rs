@@ -67,7 +67,7 @@ void main() {
     o_Target = vec4(color, 1.0) * u_Color;
 }
 ";
-    let shader_source = load_glsl(fragment_shader, ShaderStage::Vertex);
+    let shader_source = load_glsl(fragment_shader, ShaderStage::Fragment);
     let shader_vs_raw = wgpu::util::make_spirv_raw(&shader_source);
     let shader_vs = ShaderModuleDescriptorSpirV {
         label: Some("shader.vert.spv"),

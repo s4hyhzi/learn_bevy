@@ -5,9 +5,9 @@ pub struct Vertex {
     pub normal: [i8; 4],
 }
 
-pub fn vertex(pos2: [i8; 3], nor: [i8; 3]) -> Vertex {
+pub fn vertex(pos: [i8; 3], nor: [i8; 3]) -> Vertex {
     Vertex {
-        position: [pos2[0], pos2[1], pos2[2], 1],
+        position: [pos[0], pos[1], pos[2], 1],
         normal: [nor[0], nor[1], nor[2], 0],
     }
 }
