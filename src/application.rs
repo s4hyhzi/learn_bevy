@@ -1,7 +1,7 @@
 ﻿use std::sync::Arc;
 
 use egui_wgpu::ScreenDescriptor;
-use wgpu::{Adapter, Device, include_spirv_raw, Surface, SurfaceConfiguration, TextureFormat};
+use wgpu::{Adapter, Device, ShaderModuleDescriptorSpirV, Surface, SurfaceConfiguration, TextureFormat};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -12,6 +12,7 @@ use winit::keyboard::{Key, NamedKey};
 use winit::keyboard::ModifiersState;
 use winit::window::Window;
 
+use crate::{load_glsl, ShaderStage};
 use crate::gui_tools::GuiRenderer;
 
 pub trait Application {
@@ -71,19 +72,26 @@ pub trait Application {
         let mut scale_factor = 1.0;
         let mut view_update = false;
 
-        let shader_vs = include_spirv_raw!("shader.vert.spv");
-        let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
-
-        // let shader_source = load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
-        // let shader_vs_raw = wgpu::util::make_spirv_raw(&shader_source);
-        // let shader_vs = ShaderModuleDescriptorSpirV {
-        //     label: Some("shader.vert.spv"),
-        //     source: shader_vs_raw,
-        // };
+        // let shader_vs = include_spirv_raw!("shader.vert.spv");
         // let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
 
+        // let shader_fs = include_spirv_raw!("shader.frag.spv");
+        // let fs_module = unsafe { device.create_shader_module_spirv(&shader_fs) };
 
-        let shader_fs = include_spirv_raw!("shader.frag.spv");
+        let shader_source = load_glsl(include_str!("shader.vert"), ShaderStage::Vertex);
+        let shader_vs_raw = wgpu::util::make_spirv_raw(&shader_source);
+        let shader_vs = ShaderModuleDescriptorSpirV {
+            label: Some("shader.vert.spv"),
+            source: shader_vs_raw,
+        };
+        let vs_module = unsafe { device.create_shader_module_spirv(&shader_vs) };
+
+        let shader_source = load_glsl(include_str!("shader.frag"), ShaderStage::Fragment);
+        let shader_fs_raw = wgpu::util::make_spirv_raw(&shader_source);
+        let shader_fs = ShaderModuleDescriptorSpirV {
+            label: Some("shader.frag.spv"),
+            source: shader_fs_raw,
+        };
         let fs_module = unsafe { device.create_shader_module_spirv(&shader_fs) };
 
         let bind_group_layout =
