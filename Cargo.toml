@@ -13,5 +13,4 @@ cgmath = "0.18.0"
 zerocopy = "0.8.0-alpha.16"
 zerocopy-derive = "0.8.0-alpha.16"
 naga = { version = "0.20.0", features = ["glsl-in", "wgsl-out"] }
-glsl-to-spirv = "0.1.7"
 futures = "0.3.30"
