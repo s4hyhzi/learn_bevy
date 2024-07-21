@@ -2,6 +2,14 @@ use std::ops::Range;
 use std::rc::Rc;
 #[allow(dead_code)]
 #[derive(Debug)]
+struct CubeDesc {
+    offset: cgmath::Vector3<f32>,
+    angle: f32,
+    scale: f32,
+    rotation: f32,
+}
+#[allow(dead_code)]
+#[derive(Debug)]
 pub struct Entity {
     pub mx_world: cgmath::Matrix4<f32>,
     pub rotation_speed: f32,
@@ -31,7 +39,7 @@ pub struct Pass {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct PassData {
+pub struct State {
     // light:Vec<Light>,
     // lights_are_dirty: bool,
     // light_uniform_buf: wgpu::Buffer,

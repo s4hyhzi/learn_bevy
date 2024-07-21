@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use winit::event_loop::{EventLoop, EventLoopWindowTarget};
 use winit::window::{Window, WindowBuilder};
 
-use crate::data_stuct::{Pass, PassData};
+use crate::data_stuct::{Pass, State};
 use crate::utils::glsl_to_wgsl;
 
 #[allow(dead_code)]
@@ -26,7 +26,7 @@ pub struct Application {
     config: wgpu::SurfaceConfiguration,
     size: winit::dpi::PhysicalSize<u32>,
     last_frame_time: Instant,
-    passes: Option<PassData>,
+    states: Option<State>,
 }
 
 
@@ -55,8 +55,6 @@ impl Application {
             .with_title("Hello Wgpu!")
             .with_inner_size(winit::dpi::LogicalSize::new(1024.0, 768.0))
             .with_min_inner_size(winit::dpi::LogicalSize::new(1024.0, 768.0))
-            .with_resizable(false)
-            .with_maximized(false)
             .build(&event_loop).unwrap());
         let size = window.inner_size();
         window_state.factor = window.scale_factor();
@@ -122,7 +120,7 @@ impl Application {
             config,
             size,
             last_frame_time: Instant::now(),
-            passes: None,
+            states: None,
         };
         app
     }
@@ -224,7 +222,7 @@ impl Application {
             pipeline: render_pipeline,
         };
 
-        self.passes = Some(PassData {
+        self.states = Some(State {
             forward_pass: pass,
         });
     }
@@ -249,7 +247,6 @@ impl Application {
         });
 
         {
-            // 1.
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[
@@ -274,7 +271,7 @@ impl Application {
             });
 
             // 新添加!
-            let Some(passes) = &self.passes else { return };
+            let Some(passes) = &self.states else { return };
             render_pass.set_pipeline(&passes.forward_pass.pipeline); // 2.
             render_pass.draw(0..3, 0..1); // 3.
         }
