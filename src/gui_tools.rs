@@ -67,7 +67,7 @@ impl GuiRenderer {
             .set_pixels_per_point(screen_descriptor.pixels_per_point);
 
         let raw_input = self.state.take_egui_input(&window);
-        let full_output = self.state.egui_ctx().run(raw_input, |ui| {
+        let full_output = self.state.egui_ctx().run(raw_input, |_ui| {
             run_ui(&self.state.egui_ctx());
         });
 

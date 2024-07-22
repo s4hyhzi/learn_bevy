@@ -1,26 +1,17 @@
 [package]
-name = "wgsl_study"
+name = "glsl_naga"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-legion = "0.4.0"
 wgpu = "0.20.1"
 winit = "0.29.15"
-nalgebra = "0.33.0"
-cfg-if = "1.0.0"
 egui = "0.28.1"
 egui-wgpu = "0.28.1"
 egui-winit = "0.28.1"
-png = "0.17.13"
-glsl-to-spirv = "0.1.7"
-env_logger = "0.11.3"
-log = "0.4.22"
 cgmath = "0.18.0"
 zerocopy = "0.8.0-alpha.16"
 zerocopy-derive = "0.8.0-alpha.16"
-tokio = { version = "1.38.1", features = ["rt", "rt-multi-thread", "macros"] }
-
-[[example]]
-name = "hello_world"
-path = "examples/hello_world.rs"
+naga = { version = "0.20.0", features = ["glsl-in", "wgsl-out"] }
+glsl-to-spirv = "0.1.7"
+futures = "0.3.30"
