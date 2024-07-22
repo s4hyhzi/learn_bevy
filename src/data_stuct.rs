@@ -1,5 +1,7 @@
 use std::ops::Range;
 use std::rc::Rc;
+use wgpu::Buffer;
+
 #[allow(dead_code)]
 #[derive(Debug)]
 struct CubeDesc {
@@ -35,6 +37,9 @@ pub struct Pass {
     pub pipeline: wgpu::RenderPipeline,
     // pub bind_group: wgpu::BindGroup,
     // pub uniform_buf: wgpu::Buffer,
+    pub vertex_buffer: Buffer,
+    pub index_buffer: Buffer,
+    pub index_count: u32,
 }
 
 #[allow(dead_code)]

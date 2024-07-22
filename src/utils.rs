@@ -27,3 +27,10 @@ pub fn wgsl_to_msl(wgsl: &str) -> (String, TranslationInfo) {
     let code = msl::write_string(&module, &info, &options, &Default::default()).unwrap();
     code
 }
+
+pub fn cast_slice<T>(data: &[T]) -> &[u8] {
+    use std::mem::size_of;
+    use std::slice::from_raw_parts;
+
+    unsafe { from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<T>()) }
+}
