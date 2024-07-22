@@ -182,32 +182,39 @@ impl Application {
         });
 
         #[allow(dead_code)]
-        #[derive(Debug, Clone, Copy)]
+        #[repr(C)]
+        #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
         struct Vertex {
             position: [f32; 3],
             color: [f32; 3],
+            tex_coords: [f32; 2],
         }
 
         const VERTICES: &[Vertex] = &[
             Vertex {
                 position: [-0.0868241, 0.49240386, 0.0],
                 color: [0.5, 0.0, 0.5],
+                tex_coords: [0.4131759, 0.00759614],
             }, // A
             Vertex {
                 position: [-0.49513406, 0.06958647, 0.0],
                 color: [0.5, 0.0, 0.5],
+                tex_coords: [0.0048659444, 0.43041354],
             }, // B
             Vertex {
                 position: [-0.21918549, -0.44939706, 0.0],
                 color: [0.5, 0.0, 0.5],
+                tex_coords: [0.28081453, 0.949397],
             }, // C
             Vertex {
                 position: [0.35966998, -0.3473291, 0.0],
                 color: [0.5, 0.0, 0.5],
+                tex_coords: [0.85967, 0.84732914],
             }, // D
             Vertex {
                 position: [0.44147372, 0.2347359, 0.0],
                 color: [0.5, 0.0, 0.5],
+                tex_coords: [0.9414737, 0.2652641],
             }, // E
         ];
 
@@ -232,18 +239,23 @@ impl Application {
         let num_indices = INDICES.len() as u32;
 
         let vertex_buffer_descriptor = wgpu::VertexBufferLayout {
-            array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
+            array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &[
                 wgpu::VertexAttribute {
-                    format: wgpu::VertexFormat::Float32x3,
                     offset: 0,
                     shader_location: 0,
+                    format: wgpu::VertexFormat::Float32x3,
                 },
                 wgpu::VertexAttribute {
-                    format: wgpu::VertexFormat::Float32x4,
-                    offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
+                    offset: size_of::<[f32; 3]>() as wgpu::BufferAddress,
                     shader_location: 1,
+                    format: wgpu::VertexFormat::Float32x3,
+                },
+                wgpu::VertexAttribute {
+                    offset: size_of::<[f32; 6]>() as wgpu::BufferAddress,
+                    shader_location: 2,
+                    format: wgpu::VertexFormat::Float32x2,
                 },
             ],
         };
@@ -338,8 +350,8 @@ impl Application {
                                     a: 1.0,
                                 }
                             ),
-                            store: wgpu::StoreOp::Store
-                        }
+                            store: wgpu::StoreOp::Store,
+                        },
                     })
                 ],
                 ..Default::default()
@@ -352,8 +364,8 @@ impl Application {
             let data = {
                 (&passes.forward_pass.vertex_buffer, &passes.forward_pass.index_buffer, passes.forward_pass.index_count)
             };
-            render_pass.set_vertex_buffer(0,data.0.slice(..)); // 3.
-            render_pass.set_index_buffer(data.1.slice(..),wgpu::IndexFormat::Uint16); // 4.
+            render_pass.set_vertex_buffer(0, data.0.slice(..)); // 3.
+            render_pass.set_index_buffer(data.1.slice(..), wgpu::IndexFormat::Uint16); // 4.
             render_pass.draw_indexed(0..data.2, 0, 0..1);
         }
         self.queue.submit(Some(encoder.finish()));
