@@ -4,7 +4,7 @@ use wgpu::util::DeviceExt;
 use winit::event_loop::{EventLoop, EventLoopWindowTarget};
 use winit::window::{Window, WindowBuilder};
 
-use crate::data_stuct::{Pass, State};
+use crate::data_struct::{Pass, State};
 use crate::utils::glsl_to_wgsl;
 
 #[allow(dead_code)]
