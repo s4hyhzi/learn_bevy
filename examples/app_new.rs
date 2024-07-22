@@ -1,4 +1,5 @@
 use glsl_naga::application::*;
-fn main(){
-    Application::new();
+#[tokio::main]
+async fn main(){
+    Application::new().await;
 }

@@ -1,4 +1,4 @@
-﻿#[repr(C)]
+#[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Vertex {
     pub position: [i8; 4],
